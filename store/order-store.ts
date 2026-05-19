@@ -110,8 +110,8 @@ type OrderState = {
   whatsappMessage: () => string;
 };
 
-const defaultDeliveryZone = deliveryZoneOptions[0]?.id ?? "";
-const defaultDeliveryFee = deliveryZoneConfig[defaultDeliveryZone]?.fee ?? 0;
+const defaultDeliveryZone = "";
+const defaultDeliveryFee = 0;
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("es-CO", {
@@ -245,8 +245,9 @@ export const useOrderStore = create<OrderState>((set, get) => ({
     get().items.reduce((sum, item) => sum + item.price * item.quantity, 0),
   total: () => get().subtotal() + get().deliveryFee,
   whatsappMessage: () => {
-    const { items, address, neighborhood, notes, deliveryFee } = get();
+    const { items, address, neighborhood, notes, deliveryFee, deliveryZone } = get();
     const total = formatCurrency(get().total());
+    const zoneLabel = deliveryZoneConfig[deliveryZone]?.label ?? "Sin zona seleccionada";
 
     const orderLines = items
       .map((item) => {
@@ -264,6 +265,7 @@ export const useOrderStore = create<OrderState>((set, get) => ({
       "📍 DIRECCIÓN DE ENTREGA:",
       address ? `• ${address}` : "• Dirección pendiente",
       neighborhood ? `• Barrio/Zona: ${neighborhood}` : "• Barrio/Zona pendiente",
+      `• Zona de domicilio: ${zoneLabel}`,
       notes ? `• Notas: ${notes}` : "• Sin notas adicionales",
       "",
       "💵 PAGO:",

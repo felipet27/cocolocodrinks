@@ -145,7 +145,7 @@ export function DeliveryCheckout() {
     };
   }, [paymentOpen, setPaymentOpen]);
 
-  const isDeliveryInfoComplete = address.trim().length > 0 && neighborhood.trim().length > 0;
+  const isDeliveryInfoComplete = address.trim().length > 0 && neighborhood.trim().length > 0 && deliveryZone !== "";
   const canSendWhatsapp = items.length > 0 && isDeliveryInfoComplete;
 
   if (!paymentOpen) {
@@ -325,8 +325,15 @@ export function DeliveryCheckout() {
                 value={deliveryZone}
                 onChange={(event) => setDeliveryZone(event.target.value)}
                 title="Zona de entrega"
-                className="rounded-xl border border-[#39FF14]/40 bg-black/50 px-4 py-3 text-sm text-white outline-none"
+                className={`rounded-xl border px-4 py-3 text-sm text-white outline-none bg-black/50 ${
+                  deliveryZone === ""
+                    ? "border-amber-300/60"
+                    : "border-[#39FF14]/40"
+                }`}
               >
+                <option value="" disabled className="bg-black text-white/50">
+                  Selecciona tu barrio o vereda
+                </option>
                 {Object.entries(deliveryOptionsByGroup).map(([groupName, options]) => (
                   <optgroup key={groupName} label={groupName}>
                     {options.map((zone) => (
@@ -375,7 +382,9 @@ export function DeliveryCheckout() {
               Enviar pedido por WhatsApp
             </a>
             {!isDeliveryInfoComplete ? (
-              <p className="text-xs text-amber-200/85">Completa dirección y barrio/vereda para enviar el pedido.</p>
+              <p className="text-xs text-amber-200/85">
+                {deliveryZone === "" ? "Selecciona una zona de domicilio para continuar." : "Completa dirección y barrio/vereda para enviar el pedido."}
+              </p>
             ) : null}
           </div>
         </div>
