@@ -10,6 +10,7 @@ import paymentQrImage from "@/imagenes/pago.jpeg";
 const whatsappNumber = "573000000000";
 const accountText = "54100035637";
 const paymentKey = "0092130882";
+type CopyAction = "amount" | "account" | "key" | "qr" | null;
 
 export function DeliveryCheckout() {
   const paymentOpen = useOrderStore((state) => state.paymentOpen);
@@ -49,10 +50,12 @@ export function DeliveryCheckout() {
     return grouped;
   }, []);
   const [feedbackMessage, setFeedbackMessage] = useState<string>("");
+  const [activeCopyAction, setActiveCopyAction] = useState<CopyAction>(null);
   const feedbackTimeoutRef = useRef<number | null>(null);
 
-  const showFeedback = (text: string) => {
+  const showFeedback = (text: string, action: CopyAction = null) => {
     setFeedbackMessage(text);
+    setActiveCopyAction(action);
 
     if (feedbackTimeoutRef.current) {
       window.clearTimeout(feedbackTimeoutRef.current);
@@ -60,17 +63,27 @@ export function DeliveryCheckout() {
 
     feedbackTimeoutRef.current = window.setTimeout(() => {
       setFeedbackMessage("");
+      setActiveCopyAction(null);
       feedbackTimeoutRef.current = null;
     }, 2200);
   };
 
-  const copyText = async (text: string, successMessage: string) => {
+  const copyText = async (text: string, successMessage: string, action: Exclude<CopyAction, null>) => {
     try {
       await navigator.clipboard.writeText(text);
-      showFeedback(successMessage);
+      showFeedback(successMessage, action);
     } catch {
       showFeedback("No se pudo copiar. Intenta de nuevo.");
     }
+  };
+
+  const copyButtonClass = (action: Exclude<CopyAction, null>) => {
+    const isActive = activeCopyAction === action;
+    return `rounded-full border px-4 py-3 text-sm font-medium transition-all duration-200 ${
+      isActive
+        ? "border-emerald-300/60 bg-emerald-400/20 text-emerald-100"
+        : "border-white/10 bg-black/30 text-white hover:-translate-y-0.5 hover:border-emerald-300/70 hover:bg-emerald-400/10"
+    }`;
   };
 
   useEffect(() => {
@@ -108,12 +121,6 @@ export function DeliveryCheckout() {
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4 backdrop-blur-md">
       <div className="relative w-full max-w-2xl">
-        {feedbackMessage ? (
-          <div className="pointer-events-none absolute right-4 top-4 z-20 max-w-[80%] rounded-xl border border-emerald-300/45 bg-[rgba(16,40,24,0.92)] px-4 py-2 text-sm font-medium text-emerald-100 shadow-lg shadow-emerald-400/20">
-            {feedbackMessage}
-          </div>
-        ) : null}
-
         <div className="max-h-[90vh] w-full overflow-y-auto rounded-[2rem] border border-[#39FF14]/55 bg-[rgba(14,14,14,0.96)] p-5 shadow-2xl shadow-[#39FF14]/20 md:p-6">
         <div className="flex items-center justify-between gap-4 border-b border-[#39FF14]/40 pb-4">
           <div>
@@ -224,31 +231,46 @@ export function DeliveryCheckout() {
 
             <div className="grid gap-3 sm:grid-cols-2">
               <button
-                className="rounded-full border border-emerald-300/40 bg-emerald-400 px-4 py-3 text-sm font-semibold text-black transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-200/80 hover:bg-emerald-300"
-                onClick={() => copyText(formatCOP(total), "Monto copiado")}
+                className={copyButtonClass("amount")}
+                onClick={() => copyText(formatCOP(total), "Monto copiado", "amount")}
               >
-                Copiar monto
+                {activeCopyAction === "amount" ? "Monto copiado" : "Copiar monto"}
               </button>
               <button
-                className="rounded-full border border-white/10 px-4 py-3 text-sm text-white transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300/70 hover:bg-emerald-400/10"
-                onClick={() => copyText(accountText, "Cuenta copiada")}
+                className={copyButtonClass("account")}
+                onClick={() => copyText(accountText, "Cuenta copiada", "account")}
               >
-                Copiar cuenta
+                {activeCopyAction === "account" ? "Cuenta copiada" : "Copiar cuenta"}
               </button>
               <button
-                className="rounded-full border border-white/10 px-4 py-3 text-sm text-white transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300/70 hover:bg-emerald-400/10"
-                onClick={() => copyText(paymentKey, "Llave copiada")}
+                className={copyButtonClass("key")}
+                onClick={() => copyText(paymentKey, "Llave copiada", "key")}
               >
-                Copiar llave
+                {activeCopyAction === "key" ? "Llave copiada" : "Copiar llave"}
               </button>
               <a
                 href={paymentQrImage.src}
                 download="qr-cocoloco-drinks.jpeg"
-                className="inline-flex items-center justify-center rounded-full border border-white/10 px-4 py-3 text-sm text-white transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300/70 hover:bg-emerald-400/10"
-                onClick={() => showFeedback("Descarga iniciada")}
+                className={`inline-flex items-center justify-center rounded-full border px-4 py-3 text-sm font-medium transition-all duration-200 ${
+                  activeCopyAction === "qr"
+                    ? "border-emerald-300/60 bg-emerald-400/20 text-emerald-100"
+                    : "border-white/10 bg-black/30 text-white hover:-translate-y-0.5 hover:border-emerald-300/70 hover:bg-emerald-400/10"
+                }`}
+                onClick={() => showFeedback("Descarga iniciada", "qr")}
               >
                 Descargar QR
               </a>
+            </div>
+
+            <div
+              aria-live="polite"
+              className={`rounded-xl border px-4 py-2 text-sm font-medium transition-all duration-200 ${
+                feedbackMessage
+                  ? "border-emerald-300/45 bg-[rgba(16,40,24,0.92)] text-emerald-100 shadow-lg shadow-emerald-400/20"
+                  : "border-transparent text-transparent"
+              }`}
+            >
+              {feedbackMessage || "Estado de copiado"}
             </div>
 
             <div className="grid gap-3 rounded-[1.25rem] border border-[#39FF14]/40 bg-black/30 p-4">
