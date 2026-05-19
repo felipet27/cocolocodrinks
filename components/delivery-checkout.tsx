@@ -7,9 +7,10 @@ import { productGroupMap } from "@/lib/products";
 import { formatCOP } from "@/lib/money";
 import paymentQrImage from "@/imagenes/pago.jpeg";
 
-const whatsappNumber = "573000000000";
-const accountText = "54100035637";
-const paymentKey = "0092130882";
+const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "573000000000";
+const accountText = process.env.NEXT_PUBLIC_PAYMENT_ACCOUNT ?? "54100035637";
+const paymentKey = process.env.NEXT_PUBLIC_PAYMENT_KEY ?? "0092130882";
+const NOTES_MAX_LENGTH = 280;
 type CopyAction = "amount" | "account" | "key" | "qr" | null;
 
 export function DeliveryCheckout() {
@@ -51,6 +52,7 @@ export function DeliveryCheckout() {
   }, []);
   const [feedbackMessage, setFeedbackMessage] = useState<string>("");
   const [activeCopyAction, setActiveCopyAction] = useState<CopyAction>(null);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const feedbackTimeoutRef = useRef<number | null>(null);
 
   const showFeedback = (text: string, action: CopyAction = null) => {
@@ -68,12 +70,39 @@ export function DeliveryCheckout() {
     }, 2200);
   };
 
+  const copyWithExecCommand = (text: string) => {
+    try {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "absolute";
+      textarea.style.left = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.select();
+      textarea.setSelectionRange(0, textarea.value.length);
+      const copied = document.execCommand("copy");
+      document.body.removeChild(textarea);
+      return copied;
+    } catch {
+      return false;
+    }
+  };
+
   const copyText = async (text: string, successMessage: string, action: Exclude<CopyAction, null>) => {
     try {
-      await navigator.clipboard.writeText(text);
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else if (!copyWithExecCommand(text)) {
+        throw new Error("Clipboard API no disponible");
+      }
       showFeedback(successMessage, action);
     } catch {
-      showFeedback("No se pudo copiar. Intenta de nuevo.");
+      if (copyWithExecCommand(text)) {
+        showFeedback(successMessage, action);
+        return;
+      }
+
+      showFeedback("No se pudo copiar. Intenta de nuevo.", null);
     }
   };
 
@@ -93,6 +122,7 @@ export function DeliveryCheckout() {
 
     const previousBodyOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    closeButtonRef.current?.focus();
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -111,23 +141,40 @@ export function DeliveryCheckout() {
       }
 
       setFeedbackMessage("");
+      setActiveCopyAction(null);
     };
   }, [paymentOpen, setPaymentOpen]);
+
+  const isDeliveryInfoComplete = address.trim().length > 0 && neighborhood.trim().length > 0;
+  const canSendWhatsapp = items.length > 0 && isDeliveryInfoComplete;
 
   if (!paymentOpen) {
     return null;
   }
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4 backdrop-blur-md">
-      <div className="relative w-full max-w-2xl">
+    <div
+      className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4 backdrop-blur-md"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          setPaymentOpen(false);
+        }
+      }}
+    >
+      <div
+        className="relative w-full max-w-2xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="checkout-title"
+        aria-describedby="checkout-subtitle"
+      >
         <div className="max-h-[90vh] w-full overflow-y-auto rounded-[2rem] border border-[#39FF14]/55 bg-[rgba(14,14,14,0.96)] p-5 shadow-2xl shadow-[#39FF14]/20 md:p-6">
         <div className="flex items-center justify-between gap-4 border-b border-[#39FF14]/40 pb-4">
           <div>
-            <h3 className="text-2xl font-semibold text-white">Confirma tu pedido</h3>
-            <p className="text-sm text-white/60">Paga por QR y envíanos el detalle por WhatsApp para despachar.</p>
+            <h3 id="checkout-title" className="text-2xl font-semibold text-white">Confirma tu pedido</h3>
+            <p id="checkout-subtitle" className="text-sm text-white/60">Paga por QR y envíanos el detalle por WhatsApp para despachar.</p>
           </div>
-          <button className="rounded-full border border-white/10 px-4 py-2 text-sm text-white/70 transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300/70 hover:bg-emerald-400/10" onClick={() => setPaymentOpen(false)}>
+          <button ref={closeButtonRef} className="rounded-full border border-white/10 px-4 py-2 text-sm text-white/70 transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300/70 hover:bg-emerald-400/10" onClick={() => setPaymentOpen(false)}>
             Cerrar
           </button>
         </div>
@@ -304,25 +351,32 @@ export function DeliveryCheckout() {
               />
               <textarea
                 value={notes}
-                onChange={(event) => setNotes(event.target.value)}
+                onChange={(event) => setNotes(event.target.value.slice(0, NOTES_MAX_LENGTH))}
                 placeholder="Notas de entrega"
+                maxLength={NOTES_MAX_LENGTH}
                 className="min-h-24 rounded-xl border border-[#39FF14]/40 bg-black/50 px-4 py-3 text-sm text-white outline-none placeholder:text-white/35"
               />
+              <p className="text-right text-xs text-white/45">{notes.length}/{NOTES_MAX_LENGTH}</p>
             </div>
 
             <a
               href={waLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="block rounded-full border border-[#25D366]/60 bg-[#25D366] px-5 py-4 text-center text-sm font-semibold text-black transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+              className={`block rounded-full border border-[#25D366]/60 bg-[#25D366] px-5 py-4 text-center text-sm font-semibold text-black transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 ${
+                canSendWhatsapp ? "" : "pointer-events-none cursor-not-allowed opacity-50"
+              }`}
               onClick={(event) => {
-                if (items.length === 0) {
+                if (!canSendWhatsapp) {
                   event.preventDefault();
                 }
               }}
             >
               Enviar pedido por WhatsApp
             </a>
+            {!isDeliveryInfoComplete ? (
+              <p className="text-xs text-amber-200/85">Completa dirección y barrio/vereda para enviar el pedido.</p>
+            ) : null}
           </div>
         </div>
       </div>
