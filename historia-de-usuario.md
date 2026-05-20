@@ -46,13 +46,13 @@ Cocoloco Drinks busca revolucionar la experiencia de compra digital de bebidas y
 3. **Transición a Entrega:**
    - Botón "Programar Entrega" despliega input de dirección (Google Places), confirma cobertura en Caldas - Antioquia.
 4. **Modal de Pago Dinámico:**
-   - QR fijo en el centro, botones para copiar total y cuenta, botón "Enviar Pedido a WhatsApp".
+   - QR en el centro, botones para copiar total y cuenta, botón "Enviar Pedido a WhatsApp".
    - Soporta compra mixta y genera mensaje de WhatsApp desglosado.
 
 ---
 
 ## Checkout con QR Asistido
-- Modal de pago interactivo, QR fijo, total a transferir, botones para copiar monto y cuenta.
+- Modal de pago interactivo, QR, total a transferir, botones para copiar monto y cuenta.
 - Instrucciones claras: "1. Escanea y pega el monto. 2. Envía comprobante a WhatsApp".
 
 ---
@@ -71,7 +71,7 @@ Cocoloco Drinks busca revolucionar la experiencia de compra digital de bebidas y
      • Apto/Int: 402
      • Notas: Golpear duro, el timbre no sirve.
   💵 PAGO:
-     • Método: Transferencia QR Fijo
+   • Método: Transferencia QR
      • Valor Total: $145.000
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   👉 Adjunto la captura de pantalla de la transferencia en este chat.

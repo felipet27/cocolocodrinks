@@ -30,13 +30,13 @@ export type ProductGroup = {
 export const productGroups: ProductGroup[] = [
   {
     id: "granizados-sin-licor",
-    title: "Granizados sin sabor",
+    title: "Granizados sin licor",
     description: "Frescos, intensos y listos para activar la noche.",
     basePrice: 10000,
     image: mangoImage,
     options: [
       {
-        label: "Sin sabor",
+        label: "Sin licor",
         price: 10000,
         flavors: ["Mango", "Fresa"],
         flavorImages: {

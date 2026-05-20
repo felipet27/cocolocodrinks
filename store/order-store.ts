@@ -257,23 +257,23 @@ export const useOrderStore = create<OrderState>((set, get) => ({
       .join("\n");
 
     return [
-      "🍹 ¡Hola Cocoloco! Acabo de hacer un pedido desde la web:",
-      "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-      "🛒 PRODUCTO:",
+      "COCOLOCO DRINKS | Nuevo pedido web",
+      "----------------------------------------",
+      "=== RESUMEN DEL PEDIDO ===",
       orderLines,
       "",
-      "📍 DIRECCIÓN DE ENTREGA:",
-      address ? `• ${address}` : "• Dirección pendiente",
-      neighborhood ? `• Barrio/Zona: ${neighborhood}` : "• Barrio/Zona pendiente",
+      "=== ENTREGA ===",
+      address ? `• Dirección: ${address}` : "• Dirección pendiente",
       `• Zona de domicilio: ${zoneLabel}`,
       notes ? `• Notas: ${notes}` : "• Sin notas adicionales",
       "",
-      "💵 PAGO:",
-      `• Método: Transferencia por QR fijo`,
-      `• Valor Total: ${total}`,
+      "=== PAGO ===",
+      "• Método: Transferencia por QR",
+      `• Valor producto: ${formatCurrency(get().subtotal())}`,
       `• Domicilio: ${formatCurrency(deliveryFee)}`,
-      "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-      "👉 Adjunto la captura de pantalla de la transferencia en este chat."
+      `• Total Servicio: ${total}`,
+      "----------------------------------------",
+      "Adjunto la captura de la transferencia en este chat."
     ].join("\n");
   }
 }));

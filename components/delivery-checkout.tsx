@@ -7,7 +7,7 @@ import { productGroupMap } from "@/lib/products";
 import { formatCOP } from "@/lib/money";
 import paymentQrImage from "@/imagenes/pago.jpeg";
 
-const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "573000000000";
+const whatsappNumber = "+573173780801";
 const accountText = process.env.NEXT_PUBLIC_PAYMENT_ACCOUNT ?? "54100035637";
 const paymentKey = process.env.NEXT_PUBLIC_PAYMENT_KEY ?? "0092130882";
 const NOTES_MAX_LENGTH = 280;
@@ -18,7 +18,6 @@ export function DeliveryCheckout() {
   const setPaymentOpen = useOrderStore((state) => state.setPaymentOpen);
   const items = useOrderStore((state) => state.items);
   const address = useOrderStore((state) => state.address);
-  const neighborhood = useOrderStore((state) => state.neighborhood);
   const notes = useOrderStore((state) => state.notes);
   const deliveryZone = useOrderStore((state) => state.deliveryZone);
   const increaseItem = useOrderStore((state) => state.increaseItem);
@@ -27,7 +26,6 @@ export function DeliveryCheckout() {
   const updateItemFlavor = useOrderStore((state) => state.updateItemFlavor);
   const clearOrder = useOrderStore((state) => state.clearOrder);
   const setAddress = useOrderStore((state) => state.setAddress);
-  const setNeighborhood = useOrderStore((state) => state.setNeighborhood);
   const setNotes = useOrderStore((state) => state.setNotes);
   const setDeliveryZone = useOrderStore((state) => state.setDeliveryZone);
   const subtotal = useOrderStore((state) => state.subtotal());
@@ -145,7 +143,7 @@ export function DeliveryCheckout() {
     };
   }, [paymentOpen, setPaymentOpen]);
 
-  const isDeliveryInfoComplete = address.trim().length > 0 && neighborhood.trim().length > 0 && deliveryZone !== "";
+  const isDeliveryInfoComplete = address.trim().length > 0 && deliveryZone !== "";
   const canSendWhatsapp = items.length > 0 && isDeliveryInfoComplete;
 
   if (!paymentOpen) {
@@ -182,7 +180,7 @@ export function DeliveryCheckout() {
         <div className="mt-5 grid gap-5 md:grid-cols-[220px_1fr]">
           <div className="rounded-[1.5rem] border border-[#39FF14]/45 bg-black/40 p-4 text-center">
             <Image src={paymentQrImage} alt="QR de pago" width={420} height={420} className="rounded-[1rem] object-cover" />
-            <p className="mt-3 text-xs uppercase tracking-[0.3em] text-emerald-200">QR fijo</p>
+            <p className="mt-3 text-xs uppercase tracking-[0.3em] text-emerald-200">QR</p>
           </div>
 
           <div className="space-y-4">
@@ -332,7 +330,7 @@ export function DeliveryCheckout() {
                 }`}
               >
                 <option value="" disabled className="bg-black text-white/50">
-                  Selecciona tu barrio o vereda
+                  Selecciona tu zona de domicilio
                 </option>
                 {Object.entries(deliveryOptionsByGroup).map(([groupName, options]) => (
                   <optgroup key={groupName} label={groupName}>
@@ -350,12 +348,7 @@ export function DeliveryCheckout() {
                 placeholder="Dirección de entrega"
                 className="rounded-xl border border-[#39FF14]/40 bg-black/50 px-4 py-3 text-sm text-white outline-none placeholder:text-white/35"
               />
-              <input
-                value={neighborhood}
-                onChange={(event) => setNeighborhood(event.target.value)}
-                placeholder="Barrio o vereda"
-                className="rounded-xl border border-[#39FF14]/40 bg-black/50 px-4 py-3 text-sm text-white outline-none placeholder:text-white/35"
-              />
+
               <textarea
                 value={notes}
                 onChange={(event) => setNotes(event.target.value.slice(0, NOTES_MAX_LENGTH))}
@@ -383,7 +376,7 @@ export function DeliveryCheckout() {
             </a>
             {!isDeliveryInfoComplete ? (
               <p className="text-xs text-amber-200/85">
-                {deliveryZone === "" ? "Selecciona una zona de domicilio para continuar." : "Completa dirección y barrio/vereda para enviar el pedido."}
+                {deliveryZone === "" ? "Selecciona una zona de domicilio para continuar." : "Completa dirección para enviar el pedido."}
               </p>
             ) : null}
           </div>
