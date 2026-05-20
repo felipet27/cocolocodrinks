@@ -170,23 +170,20 @@ export function DeliveryCheckout() {
         <div className="flex items-center justify-between gap-4 border-b border-[#39FF14]/40 pb-4">
           <div>
             <h3 id="checkout-title" className="text-2xl font-semibold text-white">Confirma tu pedido</h3>
-            <p id="checkout-subtitle" className="text-sm text-white/60">Paga por QR y envíanos el detalle por WhatsApp para despachar.</p>
+            <p id="checkout-subtitle" className="text-sm text-white/60">Revisa tu pedido, confirma la entrega y luego realiza el pago por QR para despachar.</p>
           </div>
           <button ref={closeButtonRef} className="rounded-full border border-white/10 px-4 py-2 text-sm text-white/70 transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300/70 hover:bg-emerald-400/10" onClick={() => setPaymentOpen(false)}>
             Cerrar
           </button>
         </div>
 
-        <div className="mt-5 grid gap-5 md:grid-cols-[220px_1fr]">
-          <div className="rounded-[1.5rem] border border-[#39FF14]/45 bg-black/40 p-4 text-center">
-            <Image src={paymentQrImage} alt="QR de pago" width={420} height={420} className="rounded-[1rem] object-cover" />
-            <p className="mt-3 text-xs uppercase tracking-[0.3em] text-emerald-200">QR</p>
-          </div>
-
-          <div className="space-y-4">
+        <div className="mt-5 space-y-4">
             <div className="rounded-[1.25rem] border border-[#39FF14]/40 bg-black/30 p-4">
               <div className="mb-3 flex items-center justify-between gap-3">
-                <p className="text-sm font-medium text-white">Tu pedido</p>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.18em] text-emerald-200">Paso 1</p>
+                  <p className="text-sm font-medium text-white">Tu pedido</p>
+                </div>
                 {items.length > 0 ? (
                   <button
                     className="rounded-full border border-rose-300/30 bg-rose-400/5 px-3 py-1 text-xs text-rose-300 transition-all duration-200 hover:-translate-y-0.5 hover:border-rose-200/70 hover:bg-rose-400/15 hover:text-rose-200"
@@ -267,58 +264,11 @@ export function DeliveryCheckout() {
               )}
             </div>
 
-            <div className="rounded-[1.25rem] border border-[#39FF14]/40 bg-white/5 p-4">
-              <p className="text-xs text-white/55">Subtotal productos: {formatCOP(subtotal)}</p>
-              <p className="text-sm text-white/60">Total a transferir</p>
-              <p className="text-3xl font-semibold text-white">{formatCOP(total)}</p>
-              <p className="mt-2 text-sm text-white/55">El domicilio se ajusta automáticamente según la zona seleccionada.</p>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <button
-                className={copyButtonClass("amount")}
-                onClick={() => copyText(formatCOP(total), "Monto copiado", "amount")}
-              >
-                {activeCopyAction === "amount" ? "Monto copiado" : "Copiar monto"}
-              </button>
-              <button
-                className={copyButtonClass("account")}
-                onClick={() => copyText(accountText, "Cuenta copiada", "account")}
-              >
-                {activeCopyAction === "account" ? "Cuenta copiada" : "Copiar cuenta"}
-              </button>
-              <button
-                className={copyButtonClass("key")}
-                onClick={() => copyText(paymentKey, "Llave copiada", "key")}
-              >
-                {activeCopyAction === "key" ? "Llave copiada" : "Copiar llave"}
-              </button>
-              <a
-                href={paymentQrImage.src}
-                download="qr-cocoloco-drinks.jpeg"
-                className={`inline-flex items-center justify-center rounded-full border px-4 py-3 text-sm font-medium transition-all duration-200 ${
-                  activeCopyAction === "qr"
-                    ? "border-emerald-300/60 bg-emerald-400/20 text-emerald-100"
-                    : "border-white/10 bg-black/30 text-white hover:-translate-y-0.5 hover:border-emerald-300/70 hover:bg-emerald-400/10"
-                }`}
-                onClick={() => showFeedback("Descarga iniciada", "qr")}
-              >
-                Descargar QR
-              </a>
-            </div>
-
-            <div
-              aria-live="polite"
-              className={`rounded-xl border px-4 py-2 text-sm font-medium transition-all duration-200 ${
-                feedbackMessage
-                  ? "border-emerald-300/45 bg-[rgba(16,40,24,0.92)] text-emerald-100 shadow-lg shadow-emerald-400/20"
-                  : "border-transparent text-transparent"
-              }`}
-            >
-              {feedbackMessage || "Estado de copiado"}
-            </div>
-
             <div className="grid gap-3 rounded-[1.25rem] border border-[#39FF14]/40 bg-black/30 p-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.18em] text-emerald-200">Paso 2</p>
+                <p className="mt-1 text-sm font-medium text-white">Datos de entrega</p>
+              </div>
               <select
                 value={deliveryZone}
                 onChange={(event) => setDeliveryZone(event.target.value)}
@@ -359,6 +309,71 @@ export function DeliveryCheckout() {
               <p className="text-right text-xs text-white/45">{notes.length}/{NOTES_MAX_LENGTH}</p>
             </div>
 
+            <div className="rounded-[1.25rem] border border-[#39FF14]/40 bg-white/5 p-4">
+              <p className="text-xs uppercase tracking-[0.18em] text-emerald-200">Total final</p>
+              <p className="mt-2 text-xs text-white/55">Subtotal productos: {formatCOP(subtotal)}</p>
+              <p className="text-xs text-white/55">Domicilio: {formatCOP(total - subtotal)}</p>
+              <p className="mt-2 text-sm text-white/60">Total a transferir</p>
+              <p className="text-3xl font-semibold text-white">{formatCOP(total)}</p>
+              <p className="mt-2 text-sm text-white/55">Cuando este valor esté correcto, realiza el pago por QR y comparte el comprobante por WhatsApp.</p>
+            </div>
+
+            <div className="rounded-[1.25rem] border border-[#39FF14]/40 bg-black/30 p-4">
+              <div className="mb-3">
+                <p className="text-xs uppercase tracking-[0.18em] text-emerald-200">Paso 3</p>
+                <p className="mt-1 text-sm font-medium text-white">Pago por QR</p>
+              </div>
+
+              <div className="rounded-[1.5rem] border border-[#39FF14]/45 bg-black/40 p-4 text-center">
+                <Image src={paymentQrImage} alt="QR de pago" width={420} height={420} className="mx-auto rounded-[1rem] object-cover" />
+                <p className="mt-3 text-sm text-white/65">Paga solo cuando ya hayas confirmado el total final.</p>
+              </div>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <button
+                  className={copyButtonClass("amount")}
+                  onClick={() => copyText(formatCOP(total), "Monto copiado", "amount")}
+                >
+                  {activeCopyAction === "amount" ? "Monto copiado" : "Copiar monto"}
+                </button>
+                <button
+                  className={copyButtonClass("account")}
+                  onClick={() => copyText(accountText, "Cuenta copiada", "account")}
+                >
+                  {activeCopyAction === "account" ? "Cuenta copiada" : "Copiar cuenta"}
+                </button>
+                <button
+                  className={copyButtonClass("key")}
+                  onClick={() => copyText(paymentKey, "Llave copiada", "key")}
+                >
+                  {activeCopyAction === "key" ? "Llave copiada" : "Copiar llave"}
+                </button>
+                <a
+                  href={paymentQrImage.src}
+                  download="qr-cocoloco-drinks.jpeg"
+                  className={`inline-flex items-center justify-center rounded-full border px-4 py-3 text-sm font-medium transition-all duration-200 ${
+                    activeCopyAction === "qr"
+                      ? "border-emerald-300/60 bg-emerald-400/20 text-emerald-100"
+                      : "border-white/10 bg-black/30 text-white hover:-translate-y-0.5 hover:border-emerald-300/70 hover:bg-emerald-400/10"
+                  }`}
+                  onClick={() => showFeedback("Descarga iniciada", "qr")}
+                >
+                  Descargar QR
+                </a>
+              </div>
+
+              <div
+                aria-live="polite"
+                className={`mt-3 rounded-xl border px-4 py-2 text-sm font-medium transition-all duration-200 ${
+                  feedbackMessage
+                    ? "border-emerald-300/45 bg-[rgba(16,40,24,0.92)] text-emerald-100 shadow-lg shadow-emerald-400/20"
+                    : "border-transparent text-transparent"
+                }`}
+              >
+                {feedbackMessage || "Estado de copiado"}
+              </div>
+            </div>
+
             <a
               href={waLink}
               target="_blank"
@@ -372,14 +387,13 @@ export function DeliveryCheckout() {
                 }
               }}
             >
-              Enviar pedido por WhatsApp
+              Enviar pedido y comprobante por WhatsApp
             </a>
             {!isDeliveryInfoComplete ? (
               <p className="text-xs text-amber-200/85">
                 {deliveryZone === "" ? "Selecciona una zona de domicilio para continuar." : "Completa dirección para enviar el pedido."}
               </p>
             ) : null}
-          </div>
         </div>
       </div>
       </div>
