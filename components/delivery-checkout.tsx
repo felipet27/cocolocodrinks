@@ -24,6 +24,7 @@ export function DeliveryCheckout() {
   const decreaseItem = useOrderStore((state) => state.decreaseItem);
   const removeItem = useOrderStore((state) => state.removeItem);
   const updateItemFlavor = useOrderStore((state) => state.updateItemFlavor);
+  const updateItemSize = useOrderStore((state) => state.updateItemSize);
   const clearOrder = useOrderStore((state) => state.clearOrder);
   const setAddress = useOrderStore((state) => state.setAddress);
   const setNotes = useOrderStore((state) => state.setNotes);
@@ -195,16 +196,21 @@ export function DeliveryCheckout() {
               </div>
 
               {items.length === 0 ? (
-                <p className="text-sm text-white/55">No hay productos agregados aún. Vuelve al catálogo y elige tus sabores.</p>
+                <p className="text-sm text-white/55">No hay productos agregados aún. Vuelve al catálogo y elige tus productos.</p>
               ) : (
                 <div className="space-y-2">
                   {items.map((item) => {
                     const itemTotal = item.quantity * item.price;
-                    const itemDetails = [item.variant, item.flavor].filter(Boolean).join(" - ");
+                    const itemDetails = [item.variant, item.size, item.flavor].filter(Boolean).join(" - ");
                     const group = productGroupMap[item.category];
                     const matchedOption = group?.options.find((option) => option.label === item.variant);
                     const availableFlavors = matchedOption?.flavors ?? group?.options[0]?.flavors ?? [];
-                    const showFlavorSelect = availableFlavors.length > 1;
+                    const sizeKeys = group?.sizePrices ? Object.keys(group.sizePrices) : [];
+                    const isSizeOnly = !!(group?.sizePrices && availableFlavors.every((f) => sizeKeys.includes(f)));
+                    const isSizeAndFlavor = !!(group?.sizePrices && availableFlavors.some((f) => !sizeKeys.includes(f)));
+                    const showFlavorSelect = availableFlavors.length > 1 && !group?.sizePrices;
+                    const showSizeSelect = isSizeOnly || isSizeAndFlavor;
+                    const sizeOptions = sizeKeys;
 
                     return (
                       <div key={item.id} className="rounded-xl border border-[#39FF14]/35 bg-white/5 p-3">
@@ -240,7 +246,29 @@ export function DeliveryCheckout() {
                           </button>
                         </div>
 
-                        {showFlavorSelect ? (
+                        {showSizeSelect ? (
+                          <div className="mt-2">
+                            <p className="mb-1 text-[11px] uppercase tracking-[0.14em] text-white/45">Cambiar tamaño</p>
+                            <select
+                              value={item.size ?? sizeOptions[0]}
+                              onChange={(event) => {
+                                const newSize = event.target.value;
+                                const newPrice = group!.sizePrices![newSize];
+                                updateItemSize(item.id, newSize, newPrice);
+                              }}
+                              className="w-full rounded-lg border border-[#39FF14]/40 bg-black/45 px-3 py-2 text-sm text-white outline-none"
+                              title={`Cambiar tamaño de ${item.name}`}
+                            >
+                              {sizeOptions.map((size) => (
+                                <option key={size} value={size} className="bg-black">
+                                  {size} ({formatCOP(group!.sizePrices![size])})
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        ) : null}
+
+                        {isSizeAndFlavor && !isSizeOnly ? (
                           <div className="mt-2">
                             <p className="mb-1 text-[11px] uppercase tracking-[0.14em] text-white/45">Cambiar sabor</p>
                             <select
@@ -249,7 +277,23 @@ export function DeliveryCheckout() {
                               className="w-full rounded-lg border border-[#39FF14]/40 bg-black/45 px-3 py-2 text-sm text-white outline-none"
                               title={`Cambiar sabor de ${item.name}`}
                             >
-                              {availableFlavors.map((flavor) => (
+                              {availableFlavors.filter((f) => !sizeKeys.includes(f)).map((flavor) => (
+                                <option key={flavor} value={flavor} className="bg-black">
+                                  {flavor}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        ) : showFlavorSelect && !isSizeOnly ? (
+                          <div className="mt-2">
+                            <p className="mb-1 text-[11px] uppercase tracking-[0.14em] text-white/45">Cambiar sabor</p>
+                            <select
+                              value={item.flavor ?? availableFlavors[0]}
+                              onChange={(event) => updateItemFlavor(item.id, event.target.value)}
+                              className="w-full rounded-lg border border-[#39FF14]/40 bg-black/45 px-3 py-2 text-sm text-white outline-none"
+                              title={`Cambiar sabor de ${item.name}`}
+                            >
+                              {availableFlavors.filter((f) => !sizeKeys.includes(f)).map((flavor) => (
                                 <option key={flavor} value={flavor} className="bg-black">
                                   {flavor}
                                 </option>

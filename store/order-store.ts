@@ -7,7 +7,8 @@ export type ProductCategory =
   | "granizados-con-licor"
   | "jugos-naturales"
   | "latas-cocteles"
-  | "torta-zanahoria";
+  | "torta-zanahoria"
+  | "limonadas";
 
 export type OrderItem = {
   id: string;
@@ -17,6 +18,7 @@ export type OrderItem = {
   quantity: number;
   variant?: string;
   flavor?: string;
+  size?: string;
 };
 
 export type DeliveryZone = string;
@@ -98,6 +100,7 @@ type OrderState = {
   decreaseItem: (id: string) => void;
   removeItem: (id: string) => void;
   updateItemFlavor: (id: string, flavor: string) => void;
+  updateItemSize: (id: string, size: string, price: number) => void;
   setAddress: (address: string) => void;
   setNeighborhood: (neighborhood: string) => void;
   setNotes: (notes: string) => void;
@@ -136,7 +139,8 @@ export const useOrderStore = create<OrderState>((set, get) => ({
         (currentItem) =>
           currentItem.name === item.name &&
           currentItem.variant === item.variant &&
-          currentItem.flavor === item.flavor
+          currentItem.flavor === item.flavor &&
+          currentItem.size === item.size
       );
 
       if (existing) {
@@ -190,7 +194,8 @@ export const useOrderStore = create<OrderState>((set, get) => ({
           item.id !== id &&
           item.name === target.name &&
           item.variant === target.variant &&
-          item.flavor === flavor
+          item.flavor === flavor &&
+          item.size === target.size
       );
 
       if (!mergeCandidate) {
@@ -213,6 +218,12 @@ export const useOrderStore = create<OrderState>((set, get) => ({
         })
       };
     }),
+  updateItemSize: (id, size, price) =>
+    set((state) => ({
+      items: state.items.map((item) =>
+        item.id === id ? { ...item, size, price } : item
+      )
+    })),
   setAddress: (address) => set({ address }),
   setNeighborhood: (neighborhood) => set({ neighborhood }),
   setNotes: (notes) => set({ notes }),
@@ -251,7 +262,7 @@ export const useOrderStore = create<OrderState>((set, get) => ({
 
     const orderLines = items
       .map((item) => {
-        const details = [item.variant, item.flavor].filter(Boolean).join(" - ");
+        const details = [item.variant, item.size, item.flavor].filter(Boolean).join(" - ");
         return `• ${item.quantity}x ${item.name}${details ? ` (${details})` : ""}`;
       })
       .join("\n");

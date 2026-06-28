@@ -18,6 +18,8 @@ export type ProductGroup = {
   description: string;
   basePrice: number;
   image: string | StaticImageData;
+  sizePrices?: Record<string, number>;
+  flavorNote?: string;
   options: Array<{
     label: string;
     price?: number;
@@ -32,17 +34,18 @@ export const productGroups: ProductGroup[] = [
     id: "granizados-sin-licor",
     title: "Granizados sin licor",
     description: "Frescos, intensos y listos para activar la noche.",
-    basePrice: 10000,
+    basePrice: 12000,
     image: mangoImage,
+    sizePrices: {
+      Pequeño: 12000,
+      Mediano: 14000,
+      Grande: 20000
+    },
+    flavorNote: "Como todos los días cambiamos de sabor, al finalizar el pedido te diremos con qué sabores contamos hoy.",
     options: [
       {
         label: "Sin licor",
-        price: 10000,
-        flavors: ["Mango", "Fresa"],
-        flavorImages: {
-          Mango: mangoImage,
-          Fresa: fresaImage
-        }
+        flavors: ["Pequeño", "Mediano", "Grande"]
       }
     ]
   },
@@ -50,65 +53,79 @@ export const productGroups: ProductGroup[] = [
     id: "granizados-con-licor",
     title: "Granizados con licor",
     description: "Una versión más premium, con dos sabores y más carácter.",
-    basePrice: 14000,
+    basePrice: 13000,
     image: whiskyImage,
+    sizePrices: {
+      Pequeño: 13000,
+      Mediano: 16000,
+      Grande: 24000
+    },
+    flavorNote: "Como todos los días cambiamos de sabor, al finalizar el pedido te diremos con qué sabores contamos hoy.",
     options: [
       {
         label: "Con licor",
-        price: 14000,
-        flavors: ["Whisky", "Vodka"],
-        flavorImages: {
-          Whisky: whiskyImage,
-          Vodka: vodkaImage
-        }
+        flavors: ["Pequeño", "Mediano", "Grande"]
       }
     ]
   },
   {
     id: "jugos-naturales",
     title: "Jugos Naturales",
-    description: "Cuatro sabores tropicales para una compra ligera y fresca.",
-    basePrice: 7000,
+    description: "Vaso de jugo natural en agua o leche. Escoge tu tamaño y sabor favorito.",
+    basePrice: 5000,
     image: luloImage,
+    sizePrices: {
+      Agua: 5000,
+      Leche: 6000,
+      Extragrande: 8000
+    },
     options: [
       {
         label: "Natural",
-        price: 7000,
-        flavors: ["Lulo", "Mango", "Maracuyá", "Fresa"],
-        flavorImages: {
-          Lulo: luloImage,
-          Mango: mango2Image,
-          Maracuyá: maracuyaImage,
-          Fresa: fresa2Image
-        }
+        flavors: ["Fresa", "Mora", "Frutos Rojos", "Mango", "Mango Biche", "Guanábana", "Borojo", "Mandarina", "Maracuyá", "Maracumango"]
       }
     ]
   },
   {
     id: "latas-cocteles",
     title: "Latas de cócteles",
-    description: "Cinco sabores listos para mover la noche.",
+    description: "Cócteles listos para mover la noche.",
     basePrice: 30000,
     image: latasLicorImage,
+    flavorNote: "Como todos los días cambiamos de sabor, al finalizar el pedido te diremos con qué sabores contamos hoy.",
     options: [
       {
         label: "Lata",
         price: 30000,
-        flavors: ["Tropical", "Citrus", "Berry", "Mojito", "Passion"]
+        flavors: ["Único"]
       }
     ]
   },
   {
     id: "torta-zanahoria",
-    title: "Torta de Zanahoria",
+    title: "Tortas",
     description: "El complemento perfecto para cerrar o acompañar el pedido.",
     basePrice: 5000,
     image: tortaZanahoriaImage,
     options: [
       {
-        label: "Unidad",
+        label: "Porción",
         price: 5000,
-        flavors: ["Clásica"]
+        flavors: ["Zanahoria", "Maria Luisa"]
+      }
+    ]
+  },
+  {
+    id: "limonadas",
+    title: "Limonadas",
+    description: "Limonadas frescas y naturales para cualquier momento.",
+    basePrice: 7000,
+    image: luloImage,
+    options: [
+      {
+        label: "Limonada",
+        price: 7000,
+        flavors: ["Coco", "Liche", "Yerbabuena", "Cereza"]
       }
     ]
   }
