@@ -1,6 +1,7 @@
 "use client";
 
 import { create } from "zustand";
+import { formatCOP } from "@/lib/money";
 
 export type ProductCategory =
   | "granizados-sin-licor"
@@ -75,17 +76,14 @@ export const deliveryZoneOptions: DeliveryZoneOption[] = [
   { id: "la-loceria", label: "La Locería", fee: 5000, group: "Barrios" }
 ];
 
-export const deliveryZoneConfig: Record<string, { label: string; fee: number; group: DeliveryZoneOption["group"] }> =
-  Object.fromEntries(
-    deliveryZoneOptions.map((option) => [
-      option.id,
-      {
-        label: option.label,
-        fee: option.fee,
-        group: option.group
-      }
-    ])
-  );
+export const deliveryZoneConfig: Record<string, { label: string; fee: number; group: DeliveryZoneOption["group"] }> = {};
+for (const option of deliveryZoneOptions) {
+  deliveryZoneConfig[option.id] = {
+    label: option.label,
+    fee: option.fee,
+    group: option.group
+  };
+}
 
 type OrderState = {
   items: OrderItem[];
@@ -115,13 +113,6 @@ type OrderState = {
 
 const defaultDeliveryZone = "";
 const defaultDeliveryFee = 0;
-
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    maximumFractionDigits: 0
-  }).format(value);
 
 const createId = () => globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
 
@@ -186,6 +177,7 @@ export const useOrderStore = create<OrderState>((set, get) => ({
       const target = state.items.find((item) => item.id === id);
 
       if (!target) {
+        console.warn(`updateItemFlavor: item ${id} not found`);
         return state;
       }
 
@@ -257,7 +249,7 @@ export const useOrderStore = create<OrderState>((set, get) => ({
   total: () => get().subtotal() + get().deliveryFee,
   whatsappMessage: () => {
     const { items, address, neighborhood, notes, deliveryFee, deliveryZone } = get();
-    const total = formatCurrency(get().total());
+    const total = formatCOP(get().total());
     const zoneLabel = deliveryZoneConfig[deliveryZone]?.label ?? "Sin zona seleccionada";
 
     const orderLines = items
@@ -280,8 +272,8 @@ export const useOrderStore = create<OrderState>((set, get) => ({
       "",
       "=== PAGO ===",
       "• Método: Transferencia por QR",
-      `• Valor producto: ${formatCurrency(get().subtotal())}`,
-      `• Domicilio: ${formatCurrency(deliveryFee)}`,
+      `• Valor producto: ${formatCOP(get().subtotal())}`,
+      `• Domicilio: ${formatCOP(deliveryFee)}`,
       `• Total Servicio: ${total}`,
       "----------------------------------------",
       "Adjunto la captura de la transferencia en este chat."

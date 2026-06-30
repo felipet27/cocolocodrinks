@@ -24,7 +24,6 @@ export type ProductGroup = {
     label: string;
     price?: number;
     flavors: string[];
-    flavorImages?: Record<string, string | StaticImageData>;
     variants?: string[];
   }>;
 };
@@ -132,3 +131,22 @@ export const productGroups: ProductGroup[] = [
 ];
 
 export const productGroupMap = Object.fromEntries(productGroups.map((group) => [group.id, group]));
+
+export type ProductType = {
+  hasSizes: boolean;
+  sizeKeys: string[];
+  isSizeOnly: boolean;
+  isSizeAndFlavor: boolean;
+  isFlavorOnly: boolean;
+  isSingle: boolean;
+};
+
+export function getProductType(group: ProductGroup, flavors: string[]): ProductType {
+  const hasSizes = !!group.sizePrices;
+  const sizeKeys = hasSizes ? Object.keys(group.sizePrices!) : [];
+  const isSizeOnly = hasSizes && flavors.every((f) => sizeKeys.includes(f));
+  const isSizeAndFlavor = hasSizes && flavors.some((f) => !sizeKeys.includes(f));
+  const isFlavorOnly = !hasSizes && flavors.length > 1;
+  const isSingle = !hasSizes && flavors.length === 1;
+  return { hasSizes, sizeKeys, isSizeOnly, isSizeAndFlavor, isFlavorOnly, isSingle };
+}

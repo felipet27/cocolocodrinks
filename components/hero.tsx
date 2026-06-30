@@ -14,7 +14,7 @@ export function Hero() {
             className="h-9 w-9 rounded-full border border-white/20 object-cover"
           />
           <span className="uppercase tracking-[0.2em]">Cocoloco Drinks</span>
-          <span className="hidden text-emerald-200/80 md:inline">@cocoloco_drinks1</span>
+          <span className="hidden text-emerald-200/80 md:inline">@cocolococrazydrinks1</span>
         </div>
         <div className="space-y-4">
           <h1 className="max-w-3xl text-4xl font-semibold leading-tight text-white md:text-6xl">
@@ -37,7 +37,7 @@ export function Hero() {
             Pedir ahora
           </a>
           <a
-            href="https://www.instagram.com/cocoloco_drinks1/"
+            href="https://www.instagram.com/cocolococrazydrinks1/"
             target="_blank"
             rel="noopener noreferrer"
             className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-5 py-3 text-sm font-semibold text-emerald-100 transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300/70 hover:bg-emerald-400/20"

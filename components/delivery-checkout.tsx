@@ -3,11 +3,11 @@
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { deliveryZoneOptions, useOrderStore } from "@/store/order-store";
-import { productGroupMap } from "@/lib/products";
+import { productGroupMap, getProductType } from "@/lib/products";
 import { formatCOP } from "@/lib/money";
 import paymentQrImage from "@/imagenes/pago.jpeg";
 
-const whatsappNumber = "+573173780801";
+const whatsappNumber = "+573148592608";
 const accountText = process.env.NEXT_PUBLIC_PAYMENT_ACCOUNT ?? "54100035637";
 const paymentKey = process.env.NEXT_PUBLIC_PAYMENT_KEY ?? "0092130882";
 const NOTES_MAX_LENGTH = 280;
@@ -29,6 +29,7 @@ export function DeliveryCheckout() {
   const setAddress = useOrderStore((state) => state.setAddress);
   const setNotes = useOrderStore((state) => state.setNotes);
   const setDeliveryZone = useOrderStore((state) => state.setDeliveryZone);
+  const setNeighborhood = useOrderStore((state) => state.setNeighborhood);
   const subtotal = useOrderStore((state) => state.subtotal());
   const total = useOrderStore((state) => state.total());
   const message = useOrderStore((state) => state.whatsappMessage());
@@ -95,7 +96,8 @@ export function DeliveryCheckout() {
         throw new Error("Clipboard API no disponible");
       }
       showFeedback(successMessage, action);
-    } catch {
+    } catch (err) {
+      console.warn("clipboard copy failed, trying fallback", err);
       if (copyWithExecCommand(text)) {
         showFeedback(successMessage, action);
         return;
@@ -144,7 +146,8 @@ export function DeliveryCheckout() {
     };
   }, [paymentOpen, setPaymentOpen]);
 
-  const isDeliveryInfoComplete = address.trim().length > 0 && deliveryZone !== "";
+  const neighborhood = useOrderStore((state) => state.neighborhood);
+  const isDeliveryInfoComplete = address.trim().length > 0 && neighborhood.trim().length > 0 && deliveryZone !== "";
   const canSendWhatsapp = items.length > 0 && isDeliveryInfoComplete;
 
   if (!paymentOpen) {
@@ -205,10 +208,9 @@ export function DeliveryCheckout() {
                     const group = productGroupMap[item.category];
                     const matchedOption = group?.options.find((option) => option.label === item.variant);
                     const availableFlavors = matchedOption?.flavors ?? group?.options[0]?.flavors ?? [];
-                    const sizeKeys = group?.sizePrices ? Object.keys(group.sizePrices) : [];
-                    const isSizeOnly = !!(group?.sizePrices && availableFlavors.every((f) => sizeKeys.includes(f)));
-                    const isSizeAndFlavor = !!(group?.sizePrices && availableFlavors.some((f) => !sizeKeys.includes(f)));
-                    const showFlavorSelect = availableFlavors.length > 1 && !group?.sizePrices;
+                    const { hasSizes, sizeKeys, isSizeOnly, isSizeAndFlavor } =
+                      group ? getProductType(group, availableFlavors) : { hasSizes: false, sizeKeys: [] as string[], isSizeOnly: false, isSizeAndFlavor: false };
+                    const showFlavorSelect = !isSizeOnly && (isSizeAndFlavor || (!hasSizes && availableFlavors.length > 1));
                     const showSizeSelect = isSizeOnly || isSizeAndFlavor;
                     const sizeOptions = sizeKeys;
 
@@ -268,23 +270,7 @@ export function DeliveryCheckout() {
                           </div>
                         ) : null}
 
-                        {isSizeAndFlavor && !isSizeOnly ? (
-                          <div className="mt-2">
-                            <p className="mb-1 text-[11px] uppercase tracking-[0.14em] text-white/45">Cambiar sabor</p>
-                            <select
-                              value={item.flavor ?? availableFlavors[0]}
-                              onChange={(event) => updateItemFlavor(item.id, event.target.value)}
-                              className="w-full rounded-lg border border-[#39FF14]/40 bg-black/45 px-3 py-2 text-sm text-white outline-none"
-                              title={`Cambiar sabor de ${item.name}`}
-                            >
-                              {availableFlavors.filter((f) => !sizeKeys.includes(f)).map((flavor) => (
-                                <option key={flavor} value={flavor} className="bg-black">
-                                  {flavor}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        ) : showFlavorSelect && !isSizeOnly ? (
+                        {showFlavorSelect ? (
                           <div className="mt-2">
                             <p className="mb-1 text-[11px] uppercase tracking-[0.14em] text-white/45">Cambiar sabor</p>
                             <select
@@ -340,6 +326,13 @@ export function DeliveryCheckout() {
                 value={address}
                 onChange={(event) => setAddress(event.target.value)}
                 placeholder="Dirección de entrega"
+                className="rounded-xl border border-[#39FF14]/40 bg-black/50 px-4 py-3 text-sm text-white outline-none placeholder:text-white/35"
+              />
+
+              <input
+                value={neighborhood}
+                onChange={(event) => setNeighborhood(event.target.value)}
+                placeholder="Barrio"
                 className="rounded-xl border border-[#39FF14]/40 bg-black/50 px-4 py-3 text-sm text-white outline-none placeholder:text-white/35"
               />
 
@@ -435,7 +428,11 @@ export function DeliveryCheckout() {
             </a>
             {!isDeliveryInfoComplete ? (
               <p className="text-xs text-amber-200/85">
-                {deliveryZone === "" ? "Selecciona una zona de domicilio para continuar." : "Completa dirección para enviar el pedido."}
+                {deliveryZone === ""
+                  ? "Selecciona una zona de domicilio para continuar."
+                  : !address.trim()
+                    ? "Completa la dirección para enviar el pedido."
+                    : "Completa el barrio para enviar el pedido."}
               </p>
             ) : null}
         </div>

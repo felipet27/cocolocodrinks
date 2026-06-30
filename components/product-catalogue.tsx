@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import Image from "next/image";
-import { productGroups } from "@/lib/products";
+import { productGroups, getProductType } from "@/lib/products";
 import { useOrderStore } from "@/store/order-store";
 import { formatCOP } from "@/lib/money";
 
@@ -43,25 +43,15 @@ export function ProductCatalogue() {
             ? getSelected(selectedFlavors, group.id, firstOption.label, firstOption.flavors[0])
             : undefined;
 
-          const hasSizes = !!group.sizePrices;
-          const sizeKeys = hasSizes ? Object.keys(group.sizePrices!) : [];
-          const isSizeOnly = hasSizes && firstOption
-            ? firstOption.flavors.every((f) => sizeKeys.includes(f))
-            : false;
-          const isSizeAndFlavor = hasSizes && firstOption
-            ? firstOption.flavors.some((f) => !sizeKeys.includes(f))
-            : false;
-          const isFlavorOnly = !hasSizes && firstOption && firstOption.flavors.length > 1;
-          const isSingle = !hasSizes && firstOption && firstOption.flavors.length === 1;
+          const { hasSizes, sizeKeys, isSizeOnly, isSizeAndFlavor, isFlavorOnly, isSingle } =
+            getProductType(group, firstOption?.flavors ?? []);
 
           const firstSizeKey = sizeKeys[0] ?? "";
           const selectedSize = firstOption
             ? getSelected(selectedSizes, group.id, firstOption.label, firstSizeKey)
             : "";
 
-          const displayImage = selectedFlavor && firstOption?.flavorImages
-            ? (firstOption.flavorImages[selectedFlavor] ?? group.image)
-            : group.image;
+          const displayImage = group.image;
 
           const btnLabel = isSingle
             ? (open ? "Ocultar detalle" : "Ver detalle")

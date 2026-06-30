@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    optimizePackageImports: ["framer-motion", "gsap", "zustand"]
+    optimizePackageImports: ["framer-motion", "zustand"]
   }
 };
 
