@@ -147,7 +147,8 @@ export function DeliveryCheckout() {
   }, [paymentOpen, setPaymentOpen]);
 
   const neighborhood = useOrderStore((state) => state.neighborhood);
-  const isDeliveryInfoComplete = address.trim().length > 0 && neighborhood.trim().length > 0 && deliveryZone !== "";
+  const isPickup = deliveryZone === "recoger-en-sitio";
+  const isDeliveryInfoComplete = deliveryZone !== "" && (isPickup || (address.trim().length > 0 && neighborhood.trim().length > 0));
   const canSendWhatsapp = items.length > 0 && isDeliveryInfoComplete;
 
   if (!paymentOpen) {
@@ -325,15 +326,25 @@ export function DeliveryCheckout() {
               <input
                 value={address}
                 onChange={(event) => setAddress(event.target.value)}
-                placeholder="Dirección de entrega"
-                className="rounded-xl border border-[#39FF14]/40 bg-black/50 px-4 py-3 text-sm text-white outline-none placeholder:text-white/35"
+                disabled={isPickup}
+                placeholder={isPickup ? "No aplica para recogida en sitio" : "Dirección de entrega"}
+                className={`rounded-xl border px-4 py-3 text-sm text-white outline-none placeholder:text-white/35 transition-opacity ${
+                  isPickup
+                    ? "cursor-not-allowed border-white/10 bg-black/20 opacity-40"
+                    : "border-[#39FF14]/40 bg-black/50"
+                }`}
               />
 
               <input
                 value={neighborhood}
                 onChange={(event) => setNeighborhood(event.target.value)}
-                placeholder="Barrio"
-                className="rounded-xl border border-[#39FF14]/40 bg-black/50 px-4 py-3 text-sm text-white outline-none placeholder:text-white/35"
+                disabled={isPickup}
+                placeholder={isPickup ? "No aplica para recogida en sitio" : "Barrio"}
+                className={`rounded-xl border px-4 py-3 text-sm text-white outline-none placeholder:text-white/35 transition-opacity ${
+                  isPickup
+                    ? "cursor-not-allowed border-white/10 bg-black/20 opacity-40"
+                    : "border-[#39FF14]/40 bg-black/50"
+                }`}
               />
 
               <textarea
