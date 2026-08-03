@@ -28,10 +28,11 @@ export type DeliveryZoneOption = {
   id: string;
   label: string;
   fee: number;
-  group: "Veredas y Zonas Rurales" | "Barrios";
+  group: "Recoger en sitio" | "Veredas y Zonas Rurales" | "Barrios";
 };
 
 export const deliveryZoneOptions: DeliveryZoneOption[] = [
+  { id: "recoger-en-sitio", label: "Recoger en sitio", fee: 0, group: "Recoger en sitio" },
   { id: "vereda-la-aguacatala", label: "Vereda La Aguacatala", fee: 7500, group: "Veredas y Zonas Rurales" },
   { id: "vereda-el-cano", label: "Vereda El Cano", fee: 7000, group: "Veredas y Zonas Rurales" },
   { id: "vereda-la-miel", label: "Vereda La Miel", fee: 8000, group: "Veredas y Zonas Rurales" },
